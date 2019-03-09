@@ -11,14 +11,14 @@ Hardware description is contained in a json file
 
 ## Interactive web interface
 
-Two interactive web pages are provided. Port 80 is used for convenience. If you run this application manually, you need to use sudo. But it's much more convenient to run it at startup.
-IP@/mph 
-IP@/tally
+Two interactive web pages are provided. Port 80 is used for convenience. If you run this application manually, you need to use sudo. But it's much more convenient to run it at startup.<br>
+IP@/mph <br>
+IP@/tally<br>
 
 ## REST API
 
 ### GET /config
-Returns a json describing the hardware configuration and names.
+Returns a json describing the hardware configuration and names.<br>
 {
   "config": [
     {
@@ -66,24 +66,24 @@ Returns a json describing the hardware configuration and names.
 }
 
 ### POST /config/tally
-allows to change the name of the tally output
-json content to post like {'tally_id': 1, 'name': 'my little monitor'}
-tally_id defaults to 0 if ommitted
+allows to change the name of the tally output<br>
+json content to post like {'tally_id': 1, 'name': 'my little monitor'}<br>
+tally_id defaults to 0 if ommitted<br>
 Returns the description json 
 
 ### POST /config/mph
-allows to change the name of the head (makes sense to put the CAM name)
-json content to post like {'head_id': 1, 'name': 'CAM 002'}
-head_id defaults to 0 if ommitted
+allows to change the name of the head (makes sense to put the CAM name)<br>
+json content to post like {'head_id': 1, 'name': 'CAM 002'}<br>
+head_id defaults to 0 if ommitted<br>
 Returns the description json
 
 ### POST /tally
-Sets tally statys to PGM, PVW, OFF
+Sets tally statys to PGM, PVW, OFF<br>
 json content to post like {'tally_id': 1, 'status': 'pgm'}
 
 ### POST /mph
-Control speed and direction of head
-json content to post like {'head_id': 2, 'speed': 'slow', 'move': 'right_up'}
-Allowed values for speed : slow, medium, fast
+Control speed and direction of head<br>
+json content to post like {'head_id': 2, 'speed': 'slow', 'move': 'right_up'} <br>
+Allowed values for speed : slow, medium, fast<br>
 Allowed values for move : stop, up, down left, right, left_up, left_down, right_up, right_down
 
