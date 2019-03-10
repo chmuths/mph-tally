@@ -1,15 +1,11 @@
 # coding: utf-8
 
-import RPi.GPIO as GPIO
 import time
 import json
 import os.path
 from flask import Flask, render_template, send_file, request, jsonify
-
-default_dir_pictures = ['left_up_bw', 'up_bw', 'right_up_bw',
-                        'left_bw', 'stop_bw', 'right_bw',
-                        'left_down_bw', 'down_bw', 'right_down_bw']
-default_speed_pictures = ['slow_bw', 'medium_bw', 'fast_bw']
+import tally as ty
+import head as hd
 
 # Get config file from same folder than this module
 folder_name = os.path.dirname(__file__)
@@ -24,193 +20,17 @@ def save_config(hw_config):
     with open(path, 'w') as config_file:
         json.dump(hw_config, config_file)
 
+if 'heads' in hw_conf:
+    heads = hd.init_heads(hw_conf['heads'])
+    print(heads)
+else:
+    heads=[]
 
-# Define GPIO ports associated to each moving head feature and other properties
-heads=[]
-head_id = 0
-for head in hw_conf['heads']:
-    heads = heads + [{'name': head['name'],
-                      'id': head_id,
-                      'left': head['ports']['left'],
-                      'right': head['ports']['right'],
-                      'up': head['ports']['up'],
-                      'down': head['ports']['down'],
-                      'slow': head['ports']['slow'],
-                      'medium': 0,
-                      'has_medium': False,
-                      'current_dir': 'stop',
-                      'current_speed': 'slow',
-                      'dir_pictures': default_dir_pictures.copy(),
-                      'speed_pictures': default_speed_pictures.copy()}]
-    if 'medium' in head['ports']:
-        heads[head_id]['has_medium'] = True
-        heads[head_id]['medium'] = head['ports']['medium']
-    head_id += 1
-
-print(heads)
-
-tallies=[]
-tally_id = 0
-for tally in hw_conf['tallies']:
-    tallies = tallies + [{'name': tally['name'],
-                          'id': tally_id,
-                          'pgm': tally['pgm'],
-                          'pvw': tally['pvw'],
-                          'current_status': 'OFF'}]
-    tally_id += 1
-
-print(tallies)
-
-# Set GPIO naming convention
-GPIO.setmode(GPIO.BCM)
-GPIO.setwarnings(False)
-
-# Initialize ports
-for head in heads:
-    GPIO.setup(head['left'], GPIO.OUT)
-    GPIO.setup(head['right'], GPIO.OUT)
-    GPIO.setup(head['up'], GPIO.OUT)
-    GPIO.setup(head['down'], GPIO.OUT)
-    GPIO.setup(head['slow'], GPIO.OUT)
-    if head['has_medium']:
-        GPIO.setup(head['medium'], GPIO.OUT)
-
-for tally in tallies:
-    GPIO.setup(tally['pgm'], GPIO.OUT)
-    GPIO.setup(tally['pvw'], GPIO.OUT)
-
-
-# Unitary features
-def stop(head_ID):
-    GPIO.output(heads[head_ID]['left'], GPIO.HIGH)
-    GPIO.output(heads[head_ID]['right'], GPIO.HIGH)
-    GPIO.output(heads[head_ID]['up'], GPIO.HIGH)
-    GPIO.output(heads[head_ID]['down'], GPIO.HIGH)
-
-def go_left(head_ID):
-    GPIO.output(heads[head_ID]['left'], GPIO.LOW)
-    GPIO.output(heads[head_ID]['right'], GPIO.HIGH)
-
-def go_right(head_ID):
-    GPIO.output(heads[head_ID]['left'], GPIO.HIGH)
-    GPIO.output(heads[head_ID]['right'], GPIO.LOW)
-
-def pan_stop(head_ID):
-    GPIO.output(heads[head_ID]['left'], GPIO.HIGH)
-    GPIO.output(heads[head_ID]['right'], GPIO.HIGH)
-
-def go_up(head_ID):
-    GPIO.output(heads[head_ID]['up'], GPIO.LOW)
-    GPIO.output(heads[head_ID]['down'], GPIO.HIGH)
-
-def go_down(head_ID):
-    GPIO.output(heads[head_ID]['up'], GPIO.HIGH)
-    GPIO.output(heads[head_ID]['down'], GPIO.LOW)
-
-def tilt_stop(head_ID):
-    GPIO.output(heads[head_ID]['up'], GPIO.HIGH)
-    GPIO.output(heads[head_ID]['down'], GPIO.HIGH)
-
-def move(head_ID, direction):
-    heads[head_ID]['dir_pictures'] = default_dir_pictures.copy()
-    if direction == 'stop':
-        stop(head_ID)
-        heads[head_ID]['dir_pictures'][4] = 'stop'
-        heads[head_ID]['current_dir'] = direction
-    elif direction == 'up':
-        go_up(head_ID)
-        pan_stop(head_ID)
-        heads[head_ID]['dir_pictures'][1] = 'up'
-        heads[head_ID]['current_dir'] = direction
-    elif direction == 'down':
-        go_down(head_ID)
-        pan_stop(head_ID)
-        heads[head_ID]['dir_pictures'][7] = 'down'
-        heads[head_ID]['current_dir'] = direction
-    elif direction == 'left':
-        go_left(head_ID)
-        tilt_stop(head_ID)
-        heads[head_ID]['dir_pictures'][3] = 'left'
-        heads[head_ID]['current_dir'] = direction
-    elif direction == 'right':
-        go_right(head_ID)
-        tilt_stop(head_ID)
-        heads[head_ID]['dir_pictures'][5] = 'right'
-        heads[head_ID]['current_dir'] = direction
-    elif direction == 'left_up':
-        go_left(head_ID)
-        go_up(head_ID)
-        heads[head_ID]['dir_pictures'][0] = 'left_up'
-        heads[head_ID]['current_dir'] = direction
-    elif direction == 'left_down':
-        go_left(head_ID)
-        go_down(head_ID)
-        heads[head_ID]['dir_pictures'][6] = 'left_down'
-        heads[head_ID]['current_dir'] = direction
-    elif direction == 'right_up':
-        go_right(head_ID)
-        go_up(head_ID)
-        heads[head_ID]['dir_pictures'][2] = 'right_up'
-        heads[head_ID]['current_dir'] = direction
-    elif direction == 'right_down':
-        go_right(head_ID)
-        go_down(head_ID)
-        heads[head_ID]['dir_pictures'][8] = 'right_down'
-        heads[head_ID]['current_dir'] = direction
-
-def low_speed(head_ID):
-    GPIO.output(heads[head_ID]['slow'], GPIO.LOW)
-    if heads[head_ID]['has_medium']:
-        GPIO.output(heads[head_ID]['medium'], GPIO.HIGH)
-
-def medium_speed(head_ID):
-    GPIO.output(heads[head_ID]['slow'], GPIO.HIGH)
-    if heads[head_ID]['medium']:
-        GPIO.output(heads[head_ID]['medium'], GPIO.LOW)
-
-def high_speed(head_ID):
-    GPIO.output(heads[head_ID]['slow'], GPIO.HIGH)
-    if heads[head_ID]['has_medium']:
-        GPIO.output(heads[head_ID]['medium'], GPIO.HIGH)
-
-def set_speed(head_ID, speed_setting):
-    """
-    Sets speed of MHP100 head. In case of wrong argument, no change is done.
-    :param head_ID: ID of the head to be updated
-    :param speed_setting: string with values slow, medium or fast
-    :return: nothing
-    """
-    heads[head_ID]['speed_pictures'] = default_speed_pictures.copy()
-    if speed_setting == 'slow':
-        low_speed(head_ID)
-        heads[head_ID]['speed_pictures'][0] = 'slow'
-        heads[head_ID]['current_speed'] = speed_setting
-    elif speed_setting == 'medium' and heads[head_ID]['has_medium']:
-        medium_speed(head_ID)
-        heads[head_ID]['speed_pictures'][1] = 'medium'
-        heads[head_ID]['current_speed'] = speed_setting
-    elif speed_setting == 'fast':
-        high_speed(head_ID)
-        heads[head_ID]['speed_pictures'][2] = 'fast'
-        heads[head_ID]['current_speed'] = speed_setting
-
-
-def set_tally(tally_ID, status):
-    # Set the tally physical output according to request
-    if status == 'pgm':
-        GPIO.output(tallies[tally_ID]['pgm'], GPIO.HIGH)
-        GPIO.output(tallies[tally_ID]['pvw'], GPIO.LOW)
-        tallies[tally_ID]['current_status'] = 'PGM'
-    elif status == 'pvw':
-        GPIO.output(tallies[tally_ID]['pgm'], GPIO.LOW)
-        GPIO.output(tallies[tally_ID]['pvw'], GPIO.HIGH)
-        tallies[tally_ID]['current_status'] = 'PVW'
-    else:
-        status = 'off'
-        GPIO.output(tallies[tally_ID]['pgm'], GPIO.LOW)
-        GPIO.output(tallies[tally_ID]['pvw'], GPIO.LOW)
-        tallies[tally_ID]['current_status'] = 'OFF'
-    return status
+if 'tallies' in hw_conf:
+    tallies = ty.init_tallies(hw_conf['tallies'])
+    print(tallies)
+else:
+    tallies=[]
 
 
 def auto_test():
@@ -223,41 +43,41 @@ def auto_test():
 
     print('go right')
     for tally_ID in range(nb_tallies):
-        set_tally(tally_ID, 'pvw')
+        ty.set_tally(tallies[tally_ID], 'pvw')
     for head_ID in range(nb_heads):
-        go_right(head_ID)
+        hd.go_right(heads[head_ID])
     time.sleep(3)
 
     print('Go left')
     for tally_ID in range(nb_tallies):
-        set_tally(tally_ID, 'pgm')
+        ty.set_tally(tallies[tally_ID], 'pgm')
     for head_ID in range(nb_heads):
-        go_left(head_ID)
+        hd.go_left(heads[head_ID])
     time.sleep(3)
 
     print('Pan Stop')
     for head_ID in range(nb_heads):
-        pan_stop(head_ID)
+        hd.pan_stop(heads[head_ID])
 
     print('go up')
     for tally_ID in range(nb_tallies):
-        set_tally(tally_ID, 'pvw')
+        ty.set_tally(tallies[tally_ID], 'pvw')
     for head_ID in range(nb_heads):
-        go_up(head_ID)
+        hd.go_up(heads[head_ID])
     time.sleep(3)
 
     print('Go down')
     for tally_ID in range(nb_tallies):
-        set_tally(tally_ID, 'pgm')
+        ty.set_tally(tallies[tally_ID], 'pgm')
     for head_ID in range(nb_heads):
-        go_down(head_ID)
+        hd.go_down(heads[head_ID])
     time.sleep(2)
 
     print('tilt Stop')
     for tally_ID in range(nb_tallies):
-        set_tally(tally_ID, 'off')
+        ty.set_tally(tallies[tally_ID], 'off')
     for head_ID in range(nb_heads):
-        tilt_stop(head_ID)
+        hd.tilt_stop(heads[head_ID])
 
 
 app = Flask(__name__)
@@ -273,10 +93,10 @@ def home():
         if head_id < len(heads):
             direction = request.args.get('move')
             if direction:
-                move(head_id, direction)
+                hd.move(heads[head_id], direction)
             speed = request.args.get('speed')
             if speed:
-                set_speed(head_id, speed)
+                hd.set_speed(heads[head_id], speed)
 
         return render_template('mph_remote_tpl.html', heads=heads)
 
@@ -290,10 +110,10 @@ def home():
         if head_id < len(heads):
             if 'move' in content:
                 move_requ = content['move'].lower()
-                move(head_id, move_requ)
+                hd.move(heads[head_id], move_requ)
             if 'speed' in content:
                 speed_req = content['speed']
-                set_speed(head_id, speed_req)
+                hd.set_speed(heads[head_id], speed_req)
 
             return jsonify({'head_id': head_id, 'move': heads[head_id]['current_dir'],
                             'speed': heads[head_id]['current_speed']})
@@ -337,7 +157,7 @@ def tally():
             tally_id = 0
         if tally_id < len(tallies) and request.args.get('status'):
             tally_status = request.args.get('status')
-            set_tally(tally_id, tally_status)
+            ty.set_tally(tallies[tally_id], tally_status)
         return render_template('tally_tpl.html', tallies=tallies)
 
     if request.method == 'POST':
@@ -349,9 +169,9 @@ def tally():
         if tally_id < len(tallies):
             if 'status' in content:
                 tally_status = content['status'].lower()
-                real_status = set_tally(tally_id, tally_status)
+                real_status = ty.set_tally(tallies[tally_id], tally_status)
             else:
-                real_status = set_tally(tally_id, 'off')
+                real_status = ty.set_tally(tallies[tally_id], 'off')
             return jsonify({'tally_id': tally_id, 'status': real_status})
         else:
             return jsonify({'tally_id': tally_id, 'status': 'unknown'}), 400
@@ -435,7 +255,7 @@ if __name__ == '__main__':
 
     nb_heads = len(heads)
     for head_id in range(nb_heads):
-        move(head_id, 'stop')
-        set_speed(head_id, 'slow')
+        hd.move(heads[head_id], 'stop')
+        hd.set_speed(heads[head_id], 'slow')
 
     app.run(host='0.0.0.0', port=int("80"))

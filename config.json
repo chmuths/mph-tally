@@ -5,7 +5,7 @@
   "name": "CAM2"},
 {"ports": {"left": 3,  "right": 4,  "up": 14,  "down": 15,  "slow": 22,  "medium": 27},
   "name": "CAM3"}],
-"tallies": [{"name": "external", "pgm": 21, "pvw": 20},
-            {"name": "left screen", "pgm": 26, "pvw": 19},
-            {"name": "right screen", "pgm": 16, "pvw": 13}]}
+"tallies": [{"name": "external", "ports": {"pgm": [21], "pvw": [20]}},
+            {"name": "left screen", "ports": {"pgm": [26], "pvw": [26, 19], "logic": "active_low"}},
+            {"name": "right screen", "ports": {"pgm": [16], "pvw": [13, 16], "logic": "active_low"}}]}
 
