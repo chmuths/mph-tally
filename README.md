@@ -6,7 +6,9 @@ Up to 3 motorized heads and 3 tally lights are supported.
 Supported moving head is currently only MPH100
 Tally is a PGM/PVW which can be output on a 3.5 mm jack like the datavideo ITC-100. As the Rasperry Pi outputs 3.3V on its pins, while tally devices usually require contact closure to ground, an optocoupler isolation is recommended. The Raspberry Pi can drive directly the optocoupler's LED, with a resistor for current limitation, and the transistor side will do the contact closure.
 
-Hardware description is contained in a json file
+Hardware description is contained in a json file.<br>
+New feature is to allow active_low logical inputs, This is useful for some monitors with embedded Tally light.
+Also more than a port to be combined for a given status.  This is useful if you want the Preview to light yellow, which implies on some monitors like Blackmagic to set both red and green or.
 
 
 ## Interactive web interface
