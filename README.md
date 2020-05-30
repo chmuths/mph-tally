@@ -80,7 +80,7 @@ head_id defaults to 0 if ommitted<br>
 Returns the description json
 
 ### POST /tally
-Sets tally statys to PGM, PVW, OFF<br>
+Sets tally status to PGM, PVW, OFF<br>
 json content to post like {'tally_id': 1, 'status': 'pgm'}
 
 ### POST /mph
