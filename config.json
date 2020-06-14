@@ -1,11 +1,43 @@
-{"heads": [
-{"ports": {"left": 7,  "right": 6,  "up": 5,  "down": 8,  "slow": 17,  "medium": 18},
-  "name": "CAM1"},
-{"ports": {"left": 11,  "right": 9,  "up": 25,  "down": 10,  "slow": 23,  "medium": 24},
-  "name": "CAM2"},
-{"ports": {"left": 3,  "right": 4,  "up": 14,  "down": 15,  "slow": 22,  "medium": 27},
-  "name": "CAM3"}],
-"tallies": [{"name": "external", "ports": {"pgm": [21], "pvw": [20]}},
-            {"name": "left screen", "ports": {"pgm": [26], "pvw": [26, 19], "logic": "active_low"}},
-            {"name": "right screen", "ports": {"pgm": [16], "pvw": [13, 16], "logic": "active_low"}}]}
+{
+  "tallies": [
+    {
+      "name": "external",
+      "ports": {
+        "pgm": [
+          20
+        ],
+        "pvw": [
+          16
+        ]
+      }
+    }
+  ],
+  "buttons": [
+    {
+      "name": "red",
+      "port": 18,
+      "action": "switch",
+      "matrix_out": 0,
+      "matrix_in": [10]
+    },
+    {
+      "name": "white",
+      "port": 23,
+      "action": "switch",
+      "matrix_out": 0,
+      "matrix_in": [12]
+    },
+    {
+      "name": "black",
+      "port": 24,
+      "action": "toggle",
+      "matrix_out": 0,
+      "matrix_in": [13, 14, 15]
+    }
+  ],
+  "videohub": {
+    "ip": "192.168.0.242",
+    "port": "9990"
+  }
+}
 

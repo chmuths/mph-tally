@@ -19,8 +19,6 @@ def init_tallies(tally_config):
                 tallies[tally_id]['logic'] = tally['ports']['logic']
         tally_id += 1
 
-    print(tallies)
-
     # Set GPIO naming convention
     GPIO.setmode(GPIO.BCM)
     GPIO.setwarnings(False)

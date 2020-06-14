@@ -13,9 +13,11 @@ Also more than a port to be combined for a given status.  This is useful if you 
 
 ## Interactive web interface
 
-Two interactive web pages are provided. Port 80 is used for convenience. If you run this application manually, you need to use sudo. But it's much more convenient to run it at startup.<br>
-IP@/mph <br>
-IP@/tally<br>
+Two interactive web pages are provided. Port 80 is used for convenience. If you run this application manually, you need to use sudo. But it's much more convenient to run it at startup.  
+/ Home page
+/mph Page to drive MPH100 heads   
+/tally Page to set tally lights
+/buttons Page to configure buttons
 
 ## REST API
 

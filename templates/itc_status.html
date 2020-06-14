@@ -1,0 +1,83 @@
+<html>
+<head>
+    <title>ITC Status</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <link href="{{ url_for('static', filename='css/acp.css') }}" rel="stylesheet" type="text/css">
+</head>
+<body bgcolor="#FFFFFF" leftmargin="0" topmargin="0" marginwidth="0" marginheight="0">
+
+<table id="cadre">
+    <tr>
+        <td>
+            <h3>Status du boitier {{ hostname }}</h3>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <hr/><h4>BOUTONS</h4>
+        </td>
+    </tr>
+    {% for button in buttons %}
+    <tr bgcolor="white">
+        <td>
+            <h3>{{ button.name }}</h3>
+            <table>
+                <tr>
+                    <td>Type action :</td>
+                    <td>{{ button.action }}</td>
+                </tr>
+                <tr>
+                    <td>Source :</td>
+                    <td>
+                        {% for input in button.matrix_in %}
+                        {{ input }} {{ videohub['INPUT LABELS'].input }}
+                        {% endfor %}
+                    </td>
+                </tr>
+                <tr>
+                    <td>Destination :</td>
+                    <td>
+                        {{ button.matrix_out }}
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+    {% endfor %}
+    <tr>
+        <td>
+            <hr/><h4>VIDEOHUB</h4>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            {% if videohub.connected %}
+            Le videohub est connecté.
+            {% else %}
+            Le videohub n'est pas connecté.<br/>
+            L'affichage des libellés des sources et destinations nécessite une connexion au Videohub.<br/>
+            <a href="/buttons">Connecter le videohub</a>
+            {% endif %}
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <hr><h4>TALLY</h4>
+        </td>
+    </tr>
+    {% for tally in tallies %}
+    <tr bgcolor="white">
+        <td>
+            <h3>{{ tally.name }}</h3>
+            <table>
+                <tr>
+                    <td>Etat:  </td>
+                    <td>{{ tally.current_status }}</td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+</body>
+</html>
