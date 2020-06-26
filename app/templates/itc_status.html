@@ -1,6 +1,7 @@
+<!DOCTYPE html>
 <html>
 <head>
-    <title>ITC Status</title>
+    <title>Status {{ hostname }}</title>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <link href="{{ url_for('static', filename='css/acp.css') }}" rel="stylesheet" type="text/css">
 </head>
@@ -13,8 +14,10 @@
         </td>
     </tr>
     <tr>
-        <td>
-            <hr/><h4>BOUTONS</h4>
+        <td align="right">
+            <hr/>
+            <h4>BOUTONS</h4>
+            <a href="/buttons">Configurer</a>
         </td>
     </tr>
     {% for button in buttons %}
@@ -30,14 +33,15 @@
                     <td>Source :</td>
                     <td>
                         {% for input in button.matrix_in %}
-                        {{ input }} {{ videohub['INPUT LABELS'].input }}
+                        <i>{{ input }}</i> <b>{{ videohub.videohub['INPUT LABELS'][input] }}</b>
                         {% endfor %}
                     </td>
                 </tr>
                 <tr>
                     <td>Destination :</td>
                     <td>
-                        {{ button.matrix_out }}
+                        <i>{{ button.matrix_out }}</i> <b>{{ videohub.videohub['OUTPUT LABELS'][button.matrix_out]
+                        }}</b>
                     </td>
                 </tr>
             </table>
@@ -46,23 +50,27 @@
     {% endfor %}
     <tr>
         <td>
-            <hr/><h4>VIDEOHUB</h4>
+            <hr/>
+            <h4>VIDEOHUB</h4>
         </td>
     </tr>
     <tr>
         <td>
             {% if videohub.connected %}
-            Le videohub est connecté.
+            <div class="green">Le videohub est connecté.</div>
             {% else %}
-            Le videohub n'est pas connecté.<br/>
+            <div class="red">Le videohub n'est pas connecté.</div>
+            <br/>
             L'affichage des libellés des sources et destinations nécessite une connexion au Videohub.<br/>
-            <a href="/buttons">Connecter le videohub</a>
+            <a href="/">Connecter le videohub</a>
             {% endif %}
         </td>
     </tr>
     <tr>
-        <td>
-            <hr><h4>TALLY</h4>
+        <td align="right">
+            <hr>
+            <h4>TALLY</h4>
+            <a href="/tally">Gérer</a>
         </td>
     </tr>
     {% for tally in tallies %}
@@ -71,7 +79,7 @@
             <h3>{{ tally.name }}</h3>
             <table>
                 <tr>
-                    <td>Etat:  </td>
+                    <td>Etat:</td>
                     <td>{{ tally.current_status }}</td>
                 </tr>
             </table>

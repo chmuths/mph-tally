@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html>
 <head>
     <title>ITC Configuration</title>
@@ -9,20 +10,27 @@
 function selectChange() {
     document.getElementById("btn_config_form").submit();
 }
+
+
 </script>
-    <table id="cadre">
-        <tr>
-            <td>
-                <h3>Configuration des boutons pour {{ hostname }}</h3>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                Le videohub n'est pas connecté.
-                <a href="/buttons">Connecter le videohub</a>
-            </td>
-        </tr>
-    </table>
+<table id="cadre">
+    <tr>
+        <td>
+            <h3>Configuration des boutons pour {{ hostname }}</h3>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Le videohub n'est pas connecté.
+            <a href="/buttons">Connecter le videohub</a>
+        </td>
+    </tr>
+    <tr>
+        <td align="center">
+            <a href="/">Accueil</a>
+        </td>
+    </tr>
+</table>
 
 </body>
 </html>

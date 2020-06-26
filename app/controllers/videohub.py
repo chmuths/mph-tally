@@ -6,8 +6,10 @@ from telnetlib import Telnet
 import re
 from pprint import pprint
 
+
 class NotConnected(Exception):
     pass
+
 
 class Videohub:
 
@@ -54,6 +56,8 @@ class Videohub:
             response = self.get_connection().read_until(b"\n\n", timeout=.01).decode('utf-8')
             return response
         except NotConnected:
+            self.connection = None
+            self.connected = False
             return None
 
     def __vh_read_stream(self):
@@ -111,7 +115,6 @@ class Videohub:
         else:
             pass
 
-
     def vh_request(self, data):
         """
         Send data to the VideoHub and return the response. When reading the response, a message triggered by another
@@ -123,10 +126,11 @@ class Videohub:
         try:
             self.get_connection().write(data.encode('ascii') + b"\n\n")
         except NotConnected:
+            self.connection = None
+            self.connected = False
             return None
 
         self.__start()
-
 
     def connect(self, vh_output: int, vh_input: int):
         """

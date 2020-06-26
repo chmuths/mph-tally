@@ -1,5 +1,6 @@
 # coding: utf-8
 
+# noinspection PyUnresolvedReferences
 import RPi.GPIO as GPIO
 
 default_dir_pictures = ['left_up_bw', 'up_bw', 'right_up_bw',
@@ -7,10 +8,10 @@ default_dir_pictures = ['left_up_bw', 'up_bw', 'right_up_bw',
                         'left_down_bw', 'down_bw', 'right_down_bw']
 default_speed_pictures = ['slow_bw', 'medium_bw', 'fast_bw']
 
-def init_heads(head_config):
 
+def init_heads(head_config):
     # Define GPIO ports associated to each moving head feature and other properties
-    heads=[]
+    heads = []
     head_id = 0
     for head in head_config:
         heads = heads + [{'name': head['name'],
@@ -31,7 +32,6 @@ def init_heads(head_config):
             heads[head_id]['medium'] = head['ports']['medium']
         head_id += 1
 
-
     # Set GPIO naming convention
     GPIO.setmode(GPIO.BCM)
     GPIO.setwarnings(False)
@@ -49,7 +49,6 @@ def init_heads(head_config):
     return heads
 
 
-
 # Unitary features
 def stop(head):
     GPIO.output(head['left'], GPIO.HIGH)
@@ -57,29 +56,36 @@ def stop(head):
     GPIO.output(head['up'], GPIO.HIGH)
     GPIO.output(head['down'], GPIO.HIGH)
 
+
 def go_left(head):
     GPIO.output(head['left'], GPIO.LOW)
     GPIO.output(head['right'], GPIO.HIGH)
+
 
 def go_right(head):
     GPIO.output(head['left'], GPIO.HIGH)
     GPIO.output(head['right'], GPIO.LOW)
 
+
 def pan_stop(head):
     GPIO.output(head['left'], GPIO.HIGH)
     GPIO.output(head['right'], GPIO.HIGH)
+
 
 def go_up(head):
     GPIO.output(head['up'], GPIO.LOW)
     GPIO.output(head['down'], GPIO.HIGH)
 
+
 def go_down(head):
     GPIO.output(head['up'], GPIO.HIGH)
     GPIO.output(head['down'], GPIO.LOW)
 
+
 def tilt_stop(head):
     GPIO.output(head['up'], GPIO.HIGH)
     GPIO.output(head['down'], GPIO.HIGH)
+
 
 def move(head, direction):
     head['dir_pictures'] = default_dir_pictures.copy()
@@ -128,20 +134,24 @@ def move(head, direction):
         head['dir_pictures'][8] = 'right_down'
         head['current_dir'] = direction
 
+
 def low_speed(head):
     GPIO.output(head['slow'], GPIO.LOW)
     if head['has_medium']:
         GPIO.output(head['medium'], GPIO.HIGH)
+
 
 def medium_speed(head):
     GPIO.output(head['slow'], GPIO.HIGH)
     if head['medium']:
         GPIO.output(head['medium'], GPIO.LOW)
 
+
 def high_speed(head):
     GPIO.output(head['slow'], GPIO.HIGH)
     if head['has_medium']:
         GPIO.output(head['medium'], GPIO.HIGH)
+
 
 def set_speed(head, speed_setting):
     """
@@ -163,4 +173,3 @@ def set_speed(head, speed_setting):
         high_speed(head)
         head['speed_pictures'][2] = 'fast'
         head['current_speed'] = speed_setting
-
