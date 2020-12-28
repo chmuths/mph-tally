@@ -14,8 +14,14 @@ class NotConnected(Exception):
 class Videohub:
 
     def __init__(self, videohub_config):
-        self._host = videohub_config["ip"]
-        self._port = videohub_config["port"]
+        if videohub_config:
+            self._host = videohub_config["ip"]
+            self._port = videohub_config["port"]
+        else:
+            print("no videohub in config file")
+            self._host = None
+            self._port = None
+
         self.connection = None
         self.connected = False
         self._timer = None
@@ -29,15 +35,18 @@ class Videohub:
         if self.connection:
             return self.connection
         else:
-            try:
-                self.connection = Telnet(self._host, self._port)
-                self.connected = True
-                self.__start()
-                return self.connection
-            except OSError as ex:
-                print(f"Got OSError: {ex}")
-                self.connection = None
-                self.connected = False
+            if self._host:
+                try:
+                    self.connection = Telnet(self._host, self._port)
+                    self.connected = True
+                    self.__start()
+                    return self.connection
+                except OSError as ex:
+                    print(f"Got OSError: {ex}")
+                    self.connection = None
+                    self.connected = False
+                    raise NotConnected
+            else:
                 raise NotConnected
 
     def __start(self):

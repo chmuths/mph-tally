@@ -1,0 +1,39 @@
+{
+  "tallies": [
+    {
+      "name": "external",
+      "ports": {
+        "pgm": [
+          20
+        ],
+        "pvw": [
+          16
+        ]
+      }
+    }
+  ],
+  "buttons": [
+    {
+      "name": "red",
+      "port": 18,
+      "action": "switch",
+      "matrix_out": 0,
+      "matrix_in": [10]
+    },
+    {
+      "name": "white",
+      "port": 23,
+      "action": "switch",
+      "matrix_out": 0,
+      "matrix_in": [12]
+    },
+    {
+      "name": "black",
+      "port": 24,
+      "action": "toggle",
+      "matrix_out": 0,
+      "matrix_in": [13, 14, 15]
+    }
+  ]
+}
+

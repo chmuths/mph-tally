@@ -1,0 +1,15 @@
+[Unit]
+Description=MPH Tally
+
+[Service]
+User=root
+Group=root
+WorkingDirectory=/home/pi/webapps/app
+ExecStart=python3 run.py
+TimeoutStartSec=0
+Restart=on-failure
+StartLimitIntervalSec=60
+StartLimitBurst=3
+
+[Install]
+WantedBy=multi-user.target

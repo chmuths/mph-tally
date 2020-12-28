@@ -5,6 +5,7 @@ import json
 import os.path
 from flask import Flask, render_template, send_file, request, jsonify
 from controllers import buttons as btn, head as hd, tally as ty, videohub as vh
+from controllers import blinker
 
 # Get config file from same folder than this module
 folder_name = os.path.dirname(__file__)
@@ -21,11 +22,7 @@ else:
 tallies = ty.Tally(hw_conf.get('tallies'))
 print(f"TALLIES\n{tallies.tallies}")
 
-if 'videohub' in hw_conf:
-    videohub = vh.Videohub(hw_conf['videohub'])
-else:
-    videohub = None
-    print("no videohub in config file")
+videohub = vh.Videohub(hw_conf.get('videohub', {}))
 
 button_instances = {}
 if 'buttons' in hw_conf:
@@ -178,8 +175,10 @@ def tally():
         else:
             tally_id = 0
         if tally_id < len(tallies.tallies) and request.args.get('status'):
+            blinker.stop_blinker()
             tally_status = request.args.get('status')
             tallies.set_tally(tally_id, tally_status)
+
         return render_template('tally_tpl.html', tallies=tallies.tallies, hostname=hostname)
 
     if request.method == 'POST':
@@ -189,6 +188,7 @@ def tally():
         else:
             tally_id = 0
         if tally_id < len(tallies.tallies):
+            blinker.stop_blinker()
             if 'status' in content:
                 tally_status = content['status'].lower()
                 real_status = tallies.set_tally(tally_id, tally_status)
@@ -342,14 +342,16 @@ def test_button(button_name):
 if __name__ == '__main__':
 
     hostname = os.uname().nodename
-    auto_test()
+    # auto_test()
     nb_heads = len(heads)
     for head_id in range(nb_heads):
         hd.move(heads[head_id], 'stop')
         hd.set_speed(heads[head_id], 'slow')
+
     try:
         videohub.get_connection()
-    except vh.NotConnected:
+    except (vh.NotConnected, AttributeError):
         pass
 
+    blinker = blinker.Scheduler(tallies)
     app.run(host='0.0.0.0', port=int("80"))

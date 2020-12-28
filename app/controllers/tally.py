@@ -69,3 +69,10 @@ class Tally:
                     GPIO.output(port, GPIO.HIGH)
             self.tallies[tally_id]['current_status'] = 'OFF'
         return status
+
+    def blink_tally(self, tally_id):
+        # Set the tally physical output according to request
+        if self.tallies[tally_id]['current_status'] == 'PVW':
+            self.set_tally(tally_id, 'pgm')
+        else:
+            self.set_tally(tally_id, 'pvw')
