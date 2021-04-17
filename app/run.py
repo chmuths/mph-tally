@@ -4,8 +4,9 @@ import time
 import json
 import os.path
 from flask import Flask, render_template, send_file, request, jsonify
-from controllers import buttons as btn, head as hd, tally as ty, videohub as vh
+from controllers import buttons as btn, head as hd, tally as ty
 from controllers import blinker
+from companion import companion_api_calls
 
 # Get config file from same folder than this module
 folder_name = os.path.dirname(__file__)
@@ -22,14 +23,20 @@ else:
 tallies = ty.Tally(hw_conf.get('tallies'))
 print(f"TALLIES\n{tallies.tallies}")
 
-videohub = vh.Videohub(hw_conf.get('videohub', {}))
+if 'companion' in hw_conf:
+    companion = hw_conf['companion']
+    companion_api = companion_api_calls.CompanionAPI(companion)
+else:
+    companion_api = None
+    companion = {}
 
 button_instances = {}
-if 'buttons' in hw_conf:
+if 'buttons' in hw_conf and companion_api:
     buttons = hw_conf['buttons']
     for button in buttons:
-        button_instance = btn.Buttons(button, videohub, tallies)
+        button_instance = btn.Buttons(button, companion_api, tallies)
         button_instances.update({button['name']: button_instance})
+        print(f"Button {button_instance.number} bank {button_instance.bank} number {button_instance.number}")
     print(f"BUTTONS\n{buttons}")
 else:
     buttons = []
@@ -44,11 +51,14 @@ def save_config(config_dict):
 
 
 def update_all_buttons(buttons_list):
+    """
+    Update buttons instances based on updated config dict
+    :param buttons_list: "Buttons" section of updated config dict from config file
+    :return: None
+    """
     for button_dict in buttons_list:
         button_to_update = button_instances[button_dict['name']]
-        button_to_update.configure_button(action=button_dict['action'], matrix_in=button_dict['matrix_in'],
-                                          matrix_out=button_dict['matrix_out'],
-                                          visual_echo=button_dict.get('visual_echo'))
+        button_to_update.configure_button(button_dict)
 
 
 def auto_test():
@@ -205,15 +215,9 @@ def config_display():
     Display a general status page
     :return: HTML page
     """
-    if not videohub.connected:
-        try:
-            videohub.get_connection()
-        except vh.NotConnected:
-            pass
-
     if request.method == 'GET':
         return render_template('itc_status.html', tallies=tallies.tallies, buttons=buttons,
-                               videohub=videohub, hostname=hostname)
+                               hostname=hostname)
 
 
 def build_config():
@@ -272,71 +276,45 @@ def config_head():
 
 @app.route('/buttons', methods=['GET', 'POST'])
 def config_home():
-    if not videohub.connected:
-        try:
-            videohub.get_connection()
-        except vh.NotConnected:
-            pass
-
-    if videohub.connected:
-        if request.method == 'GET':
-            return render_template('config_tpl.html', buttons=buttons, videohub=videohub.videohub, hostname=hostname)
-        else:
-            for echo_button in buttons:
-                echo_button['visual_echo'] = 'off'
-            for key, value in request.form.items():
-                print(key, value)
-                split_key = key.split("-")
-                if split_key[0] == 'button_action':
-                    button_conf = [conf for conf in buttons if conf['name'] == split_key[1]]
-                    button_conf[0].update({'action': value})
-                    if value == 'toggle' and len(button_conf[0]['matrix_in']) < 2:
-                        button_conf[0].update({'matrix_in': button_conf[0]['matrix_in'] + [0]})
-                    elif value == 'switch':
-                        button_conf[0].update({'matrix_in': [button_conf[0]['matrix_in'][0]]})
-                elif split_key[0] == 'button_input':
-                    button_conf = [conf for conf in buttons if conf['name'] == split_key[2]]
-                    if len(button_conf[0]['matrix_in']) > int(split_key[1]):
-                        button_conf[0]['matrix_in'][int(split_key[1])] = int(value)
-                elif split_key[0] == 'button_output':
-                    button_conf = [conf for conf in buttons if conf['name'] == split_key[1]]
-                    button_conf[0].update({'matrix_out': int(value)})
-                elif split_key[0] == 'echo_button':
-                    button_conf = [conf for conf in buttons if conf['name'] == split_key[1]]
-                    button_conf[0].update({'visual_echo': value})
-            print(f"Buttons {buttons}")
-            update_all_buttons(buttons)
-            save_config(hw_conf)
-            return render_template('config_tpl.html', buttons=buttons, videohub=videohub.videohub, hostname=hostname)
+    if request.method == 'GET':
+        return render_template('config_tpl.html', buttons=button_instances, companion=companion, hostname=hostname)
     else:
-        return render_template("videohub_not_connected.html", hostname=hostname)
+        companion.update({"ip": request.form.get('companion_ip'),
+                          "port": request.form.get('companion_port')})
+        companion_api.instance_companion.update_server(companion)
+        update_button_props(request.form.items())
+        return render_template('config_tpl.html', buttons=button_instances, companion=companion, hostname=hostname)
 
 
-@app.route('/buttons/<button_name>/add_toggle', methods=['POST'])
-def add_input(button_name):
-    print(f"Button name {button_name} add toggle")
-    button_conf = [conf for conf in buttons if conf['name'] == button_name]
-    button_conf[0].update({'matrix_in': button_conf[0]['matrix_in'] + [0]})
+def update_button_props(form_items):
+    for button_name, button_instance in button_instances.items():
+        button_instance.visual_echo = False
+
+    for key, value in form_items:
+        print(key, value)
+        split_key = key.split("-")
+        if split_key[0] == 'button_bank':
+            button_conf = [conf for conf in buttons if conf['name'] == split_key[1]]
+            button_conf[0].update({'bank': int(value)})
+        elif split_key[0] == 'button_number':
+            button_conf = [conf for conf in buttons if conf['name'] == split_key[1]]
+            button_conf[0].update({'number': int(value)})
+        elif split_key[0] == 'echo_button':
+            button_instance = [instance for name, instance in button_instances.items() if name == split_key[1]]
+            print(f"Value of echo checkbox {value}")
+            button_instance[0].visual_echo = (value == 'on')
+    print(f"Buttons config section {buttons}")
     update_all_buttons(buttons)
     save_config(hw_conf)
-    return render_template('config_tpl.html', buttons=buttons, videohub=videohub.videohub, hostname=hostname)
-
-
-@app.route('/buttons/<button_name>/del_toggle', methods=['POST'])
-def del_input(button_name):
-    print(f"Button name {button_name} remove toggme")
-    button_conf = [conf for conf in buttons if conf['name'] == button_name]
-    button_conf[0].update({'matrix_in': button_conf[0]['matrix_in'][:-1]})
-    update_all_buttons(buttons)
-    save_config(hw_conf)
-    return render_template('config_tpl.html', buttons=buttons, videohub=videohub.videohub, hostname=hostname)
 
 
 @app.route('/buttons/<button_name>/test', methods=['POST'])
 def test_button(button_name):
-    print(f"Button {button_name} test")
-    button_instances[button_name].execute_action()
-    return render_template('config_tpl.html', buttons=buttons, videohub=videohub.videohub, hostname=hostname)
+    update_button_props(request.form.items())
+    print(f"Button {button_name} test bank {button_instances[button_name].__dict__}")
+    button_instances[button_name].button_toggle()
+    print("Returned from TOGGLE")
+    return render_template('config_tpl.html', buttons=button_instances, companion=companion, hostname=hostname)
 
 
 if __name__ == '__main__':
@@ -347,11 +325,6 @@ if __name__ == '__main__':
     for head_id in range(nb_heads):
         hd.move(heads[head_id], 'stop')
         hd.set_speed(heads[head_id], 'slow')
-
-    try:
-        videohub.get_connection()
-    except (vh.NotConnected, AttributeError):
-        pass
 
     blinker = blinker.Scheduler(tallies)
     app.run(host='0.0.0.0', port=int("80"))

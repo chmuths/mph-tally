@@ -20,58 +20,30 @@ function selectChange() {
                 <h3>Configuration des boutons pour {{ hostname }}</h3>
             </td>
         </tr>
-        {% for button in buttons %}
+        {% for button_name, button in buttons.items() %}
         <tr bgcolor="white">
             <td>
-                <h3>{{ button.name }}</h3>
+                <h3>{{ button_name }}</h3>
                 <table>
                     <tr>
-                        <td>Type action</td>
-                        <td><select name="button_action-{{ button.name }}" onchange="selectChange()">
-                            <option value="toggle" {% if button.action=='toggle' %} selected{% endif %}>Toggle</option>
-                            <option value="switch" {% if button.action=='switch' %} selected{% endif %}>Switch vidéo
-                            </option>
-                        </select></td>
-                    </tr>
-                    <tr>
-                        <td>Source</td>
+                        <td>Bank</td>
                         <td>
-                            {% for input in button.matrix_in %}
-                            <select name="button_input-{{ loop.index0 }}-{{ button.name }}" onchange="selectChange()">
-                                {% for key, value in videohub['INPUT LABELS'].items() %}
-                                <option value="{{ key }}" {% if input== key %} selected{% endif %}>{{ value }}</option>
-                                {% endfor %}
-                            </select>
-                            {% endfor %}
-                            {% if button.action == 'toggle' %}
-                            <input type="submit" name="add_button_{{ button.name }}"
-                                   formaction="/buttons/{{ button.name }}/add_toggle" value="+">
-                            {% if button.matrix_in | count > 2 %}
-                            <input type="submit" name="remove_button_{{ button.name }}"
-                                   formaction="/buttons/{{ button.name }}/del_toggle" value="-">
-                            {% endif %}
-                            {% endif %}
+                            <input type="number" name="button_bank-{{ button_name }}" step="1" value="{{ button.bank }}">
                         </td>
                     </tr>
                     <tr>
-                        <td>Destination</td>
+                        <td>Number</td>
                         <td>
-                            <select name="button_output-{{ button.name }}" onchange="selectChange()">
-                                {% for key, value in videohub['OUTPUT LABELS'].items() %}
-                                <option value="{{ key }}" {% if button.matrix_out== key %} selected{% endif %}>{{ value
-                                    }}
-                                </option>
-                                {% endfor %}
-                            </select>
+                            <input type="number" name="button_number-{{ button_name }}" step="1" value="{{ button.number }}">
                         </td>
                     </tr>
                     <tr>
                         <td>Test</td>
                         <td>
-                            <input type="submit" name="test_button_{{ button.name }}"
-                                   formaction="/buttons/{{ button.name }}/test" value="APPUI BOUTON">
-                            Echo visuel <input type="checkbox" name="echo_button-{{ button.name }}" {% if
-                                               button.visual_echo== 'on' %}checked{% endif %}>
+                            <input type="submit" name="test_button_{{ button_name }}"
+                                   formaction="/buttons/{{ button_name }}/test" value="{% if button.state == 'up' %}APPUI BOUTON{% else %}RELACHE BOUTON{% endif %}">
+                            Echo visuel <input type="checkbox" name="echo_button-{{ button_name }}" {% if
+                                               button.visual_echo %}checked{% endif %}>
                         </td>
                     </tr>
                 </table>
@@ -79,6 +51,25 @@ function selectChange() {
         </tr>
         {% endfor %}
         <tr>
+            <td>
+                <h3>Companion API</h3>
+                <table>
+                    <tr>
+                        <td>IP</td>
+                        <td>
+                            <input type="text" name="companion_ip" value="{{ companion.ip }}">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Port</td>
+                        <td>
+                            <input type="text" name="companion_port" value="{{ companion.port }}">
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        <tr bgcolor="white">
             <td>
                 <input type="submit" name="submit_button" value="Submit">
             </td>

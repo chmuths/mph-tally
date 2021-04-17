@@ -26,46 +26,21 @@
             <h3>{{ button.name }}</h3>
             <table>
                 <tr>
-                    <td>Type action :</td>
-                    <td>{{ button.action }}</td>
-                </tr>
-                <tr>
-                    <td>Source :</td>
+                    <td>Bank :</td>
                     <td>
-                        {% for input in button.matrix_in %}
-                        <i>{{ input }}</i> <b>{{ videohub.videohub['INPUT LABELS'][input] }}</b>
-                        {% endfor %}
+                        {{ button.bank }}
                     </td>
                 </tr>
                 <tr>
-                    <td>Destination :</td>
+                    <td>Number :</td>
                     <td>
-                        <i>{{ button.matrix_out }}</i> <b>{{ videohub.videohub['OUTPUT LABELS'][button.matrix_out]
-                        }}</b>
+                        {{ button.number }}
                     </td>
                 </tr>
             </table>
         </td>
     </tr>
     {% endfor %}
-    <tr>
-        <td>
-            <hr/>
-            <h4>VIDEOHUB</h4>
-        </td>
-    </tr>
-    <tr>
-        <td>
-            {% if videohub.connected %}
-            <div class="green">Le videohub est connecté.</div>
-            {% else %}
-            <div class="red">Le videohub n'est pas connecté.</div>
-            <br/>
-            L'affichage des libellés des sources et destinations nécessite une connexion au Videohub.<br/>
-            <a href="/">Connecter le videohub</a>
-            {% endif %}
-        </td>
-    </tr>
     <tr>
         <td align="right">
             <hr>

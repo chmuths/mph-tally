@@ -4,73 +4,39 @@
       "name": "external",
       "ports": {
         "pgm": [
-          21
-        ],
-        "pvw": [
           20
+        ],
+        "pvw": [
+          16
         ]
-      }
-    },
-    {
-      "name": "left screen",
-      "ports": {
-        "pgm": [
-          26
-        ],
-        "pvw": [
-          26,
-          19
-        ],
-        "logic": "active_low"
-      }
-    },
-    {
-      "name": "right screen",
-      "ports": {
-        "pgm": [
-          16
-        ],
-        "pvw": [
-          13,
-          16
-        ],
-        "logic": "active_low"
       }
     }
   ],
   "buttons": [
     {
-      "name": "red",
+      "name": "Rouge",
       "port": 18,
-      "action": "toggle",
-      "matrix_out": 3,
-      "matrix_in": [
-        0,
-        1,
-        2
-      ]
+      "bank": 1,
+      "number": 2,
+      "mode": "PTT"
     },
     {
-      "name": "white",
+      "name": "Blanc",
       "port": 23,
-      "action": "toggle",
-      "matrix_out": 4,
-      "matrix_in": [
-        3,
-        4,
-        5
-      ]
+      "bank": 1,
+      "number": 5,
+      "mode": "PTT"
     },
     {
-      "name": "black",
+      "name": "Noir",
       "port": 24,
-      "action": "toggle",
-      "matrix_out": 5,
-      "matrix_in": [
-        13,
-        14,
-        15
-      ]
+      "bank": 1,
+      "number": 1,
+      "mode": "PTT"
     }
-  ]
+  ],
+  "companion": {
+    "ip": "192.168.0.7",
+    "port": "8888"
+  }
 }
