@@ -7,25 +7,27 @@ from flask import Flask, render_template, send_file, request, jsonify
 from controllers import buttons as btn, head as hd, tally as ty
 from controllers import blinker
 from companion import companion_api_calls
+import log
 
 # Get config file from same folder than this module
 folder_name = os.path.dirname(__file__)
 path = os.path.join(folder_name, "..", 'config.json')
 with open(path, 'r') as config_file:
     hw_conf = json.load(config_file)
+my_logger = log.Logger.get_logger('tally', 'debug')
 
 if 'heads' in hw_conf:
     heads = hd.init_heads(hw_conf['heads'])
-    print(f"HEADS\n{heads}")
+    my_logger.info(f"HEADS\n{heads}")
 else:
     heads = []
 
 tallies = ty.Tally(hw_conf.get('tallies'))
-print(f"TALLIES\n{tallies.tallies}")
+my_logger.info(f"TALLIES\n{tallies.tallies}")
 
 if 'companion' in hw_conf:
     companion = hw_conf['companion']
-    companion_api = companion_api_calls.CompanionAPI(companion)
+    companion_api = companion_api_calls.CompanionAPI(companion, my_logger)
 else:
     companion_api = None
     companion = {}
@@ -34,10 +36,8 @@ button_instances = {}
 if 'buttons' in hw_conf and companion_api:
     buttons = hw_conf['buttons']
     for button in buttons:
-        button_instance = btn.Buttons(button, companion_api, tallies)
+        button_instance = btn.Buttons(button, companion_api, tallies, my_logger)
         button_instances.update({button['name']: button_instance})
-        print(f"Button {button_instance.number} bank {button_instance.bank} number {button_instance.number}")
-    print(f"BUTTONS\n{buttons}")
 else:
     buttons = []
 
@@ -69,39 +69,39 @@ def auto_test():
     nb_heads = len(heads)
     nb_tallies = len(tallies.tallies)
 
-    print('go right')
+    my_logger.info('go right')
     for tally_ID in range(nb_tallies):
         tallies.set_tally(tally_ID, 'pvw')
     for head_ID in range(nb_heads):
         hd.go_right(heads[head_ID])
     time.sleep(1)
 
-    print('Go left')
+    my_logger.info('Go left')
     for tally_ID in range(nb_tallies):
         tallies.set_tally(tally_ID, 'pgm')
     for head_ID in range(nb_heads):
         hd.go_left(heads[head_ID])
     time.sleep(1)
 
-    print('Pan Stop')
+    my_logger.info('Pan Stop')
     for head_ID in range(nb_heads):
         hd.pan_stop(heads[head_ID])
 
-    print('go up')
+    my_logger.info('go up')
     for tally_ID in range(nb_tallies):
         tallies.set_tally(tally_ID, 'pvw')
     for head_ID in range(nb_heads):
         hd.go_up(heads[head_ID])
     time.sleep(1)
 
-    print('Go down')
+    my_logger.info('Go down')
     for tally_ID in range(nb_tallies):
         tallies.set_tally(tally_ID, 'pgm')
     for head_ID in range(nb_heads):
         hd.go_down(heads[head_ID])
     time.sleep(1)
 
-    print('tilt Stop')
+    my_logger.info('tilt Stop')
     for tally_ID in range(nb_tallies):
         tallies.set_tally(tally_ID, 'off')
     for head_ID in range(nb_heads):
@@ -170,7 +170,7 @@ def home():
             return jsonify({'error': 'invalid head ID'}), 400
 
     if request.user_agent:
-        print(request.user_agent.platform)
+        my_logger.info(request.user_agent.platform)
 
 
 @app.route('/tally', methods=['GET', 'POST'])
@@ -209,7 +209,7 @@ def tally():
             return jsonify({'tally_id': tally_id, 'status': 'unknown'}), 400
 
 
-@app.route('/', methods=['GET'])
+@app.route('/home', methods=['GET'])
 def config_display():
     """
     Display a general status page
@@ -291,7 +291,6 @@ def update_button_props(form_items):
         button_instance.visual_echo = False
 
     for key, value in form_items:
-        print(key, value)
         split_key = key.split("-")
         if split_key[0] == 'button_bank':
             button_conf = [conf for conf in buttons if conf['name'] == split_key[1]]
@@ -301,9 +300,7 @@ def update_button_props(form_items):
             button_conf[0].update({'number': int(value)})
         elif split_key[0] == 'echo_button':
             button_instance = [instance for name, instance in button_instances.items() if name == split_key[1]]
-            print(f"Value of echo checkbox {value}")
             button_instance[0].visual_echo = (value == 'on')
-    print(f"Buttons config section {buttons}")
     update_all_buttons(buttons)
     save_config(hw_conf)
 
@@ -311,9 +308,8 @@ def update_button_props(form_items):
 @app.route('/buttons/<button_name>/test', methods=['POST'])
 def test_button(button_name):
     update_button_props(request.form.items())
-    print(f"Button {button_name} test bank {button_instances[button_name].__dict__}")
-    button_instances[button_name].button_toggle()
-    print("Returned from TOGGLE")
+    my_logger.debug(f"Button {button_name} test bank {button_instances[button_name].__dict__}")
+    button_instances[button_name].button_web_test()
     return render_template('config_tpl.html', buttons=button_instances, companion=companion, hostname=hostname)
 
 

@@ -4,7 +4,7 @@ sudo systemctl stop tally.service
 
 echo "Copie du fichier de config"
 cp config-dual-screen.json ../config.json
-cp config-tally_only.json ../config.json
+cp config-tally-only.json ../config.json
 
 echo "Création du service"
 sudo cp tally.service /etc/systemd/system

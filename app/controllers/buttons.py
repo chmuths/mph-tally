@@ -11,56 +11,67 @@ GPIO.setwarnings(False)
 
 class Buttons:
 
-    def __init__(self, config, companion, tally_blinker):
-        # Define GPIO ports associated to each moving head feature and other properties
+    def __init__(self, config, companion, tally_blinker, logger):
+        # Define GPIO ports and other properties for buttons
         self.configure_button(config)
         self.companion = companion
-        self.state = 'up'
+        self.state = 1
         self.tally = tally_blinker
         self.visual_echo = False
+        self.logger = logger
 
         GPIO.setup(config['port'], GPIO.IN, pull_up_down=GPIO.PUD_UP)
         if config.get('mode', 'Normal') == 'PTT':
-            GPIO.add_event_detect(self.port, GPIO.BOTH, callback=self.button_action, bouncetime=250)
+            GPIO.add_event_detect(self.port, GPIO.BOTH, callback=self.button_action, bouncetime=40)
         else:
-            GPIO.add_event_detect(self.port, GPIO.FALLING, callback=self.button_pressed, bouncetime=250)
+            GPIO.add_event_detect(self.port, GPIO.FALLING, callback=self.button_pressed, bouncetime=150)
 
     def configure_button(self, config):
         self.config = config
         self.name = config['name']
         self.port = config['port']
-        self.bank = config.get('bank', 1)
-        self.number = config.get('number', 2)
+        self.states = config.get("states", [])
+        self.state_index = 0
+        self.reverse = config.get('reverse', 0)
 
     def button_action(self, port):
-        if GPIO.input(port):
-            print(f"Button {self.config['name']} on port {port} was released")
-            self.state = 'up'
+        gpio_value = GPIO.input(port)
+        # self.logger.info(f"Reverse {self.reverse} on port {port} with value {gpio_value}")
+        if gpio_value != self.reverse:
+            # self.logger.info(f"Button {self.config['name']} on port {port} was released")
+            self.state = 1
             self.execute_action('up')
+            self.state_index += 1
+            if self.state_index >= len(self.states):
+                self.state_index = 0
+            # self.logger.info(f"Button {self.config['name']} New index {self.state_index}")
         else:
-            print(f"Button {self.config['name']} on port {port} was pressed")
-            self.state = 'down'
+            # self.logger.info(f"Button {self.config['name']} on port {port} was pressed")
+            self.state = 0
             self.execute_action('down')
 
-    def button_pressed(self, port):
-        print(f"Button {self.config['name']} on port {port} was pressed")
-        # GPIO.remove_event_detect(self.config['port'])
-        self.execute_action(None)
-        # GPIO.add_event_detect(self.config['port'], GPIO.FALLING, callback=self.button_action, bouncetime=250)
 
-    def button_toggle(self):
-        print("Enter TOGGLE")
-        if self.state == 'down':
-            print(f"Test Button {self.config['name']} was released")
-            self.state = 'up'
+    def button_pressed(self, port):
+        self.logger.info(f"Button {self.config['name']} on port {port} was pressed")
+        self.execute_action(None)
+        self.state_index += 1
+        if self.state_index >= len(self.states):
+            self.state_index = 0
+
+    def button_web_test(self):
+        self.logger.info("Enter TEST TOGGLE")
+        if self.state == 1:
+            self.logger.info(f"Test Button {self.config['name']} was released")
+            self.state = 0
             self.execute_action('up')
         else:
-            print(f"Test Button {self.config['name']} was pressed")
-            self.state = 'down'
+            self.logger.info(f"Test Button {self.config['name']} was pressed")
+            self.state = 1
             self.execute_action('down')
 
     def execute_action(self, action):
-        self.companion.press_key(self.bank, self.number, action)
+        self.companion.press_key(self.states[self.state_index].get('bank'),
+                                 self.states[self.state_index].get('number'), action)
 
         if self.visual_echo:
             if self.tally:

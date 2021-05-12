@@ -3,8 +3,9 @@ import requests
 
 class CompanionService:
 
-    def __init__(self, config):
+    def __init__(self, config, logger):
         self._url = f"http://{config['ip']}:{config['port']}/press/bank"
+        self.logger = logger
 
     def update_server(self, config):
         self._url = f"http://{config['ip']}:{config['port']}/press/bank"
@@ -22,7 +23,7 @@ class CompanionService:
             full_url = f"{url}/{bank}/{number}/{state}"
         else:
             full_url = f"{url}/{bank}/{number}"
-        print(f"Companion API GET to {full_url}")
+        # self.logger.info(f"Companion API GET to {full_url}")
         try:
             response = requests.get(url=full_url, timeout=10)
         except requests.exceptions.RequestException as e:

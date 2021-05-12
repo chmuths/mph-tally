@@ -28,13 +28,13 @@ function selectChange() {
                     <tr>
                         <td>Bank</td>
                         <td>
-                            <input type="number" name="button_bank-{{ button_name }}" step="1" value="{{ button.bank }}">
+                            <input type="number" name="button_bank-{{ button_name }}" step="1" value="{{ button.states[0].bank }}">
                         </td>
                     </tr>
                     <tr>
                         <td>Number</td>
                         <td>
-                            <input type="number" name="button_number-{{ button_name }}" step="1" value="{{ button.number }}">
+                            <input type="number" name="button_number-{{ button_name }}" step="1" value="{{ button.states[0].number }}">
                         </td>
                     </tr>
                     <tr>
@@ -76,7 +76,7 @@ function selectChange() {
         </tr>
         <tr>
             <td>
-                <a href="/">Accueil</a>
+                <a href="/home">Accueil</a>
             </td>
         </tr>
     </table>

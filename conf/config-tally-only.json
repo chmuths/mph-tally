@@ -16,24 +16,36 @@
     {
       "name": "red",
       "port": 18,
-      "bank": 1,
-      "number": 2,
-      "mode": "PTT"
-    },
-    {
-      "name": "white",
-      "port": 23,
-      "bank": 1,
-      "number": 2,
-      "mode": "Normal"
+      "reverse": 1,
+      "mode": "PTT",
+      "states": [
+        {
+          "bank": 1,
+          "number": 2
+        }
+      ]
     },
     {
       "name": "black",
       "port": 24,
       "bank": 1,
       "number": 2,
-      "mode": "Normal"
+      "mode": "PTT",
+      "states": [
+        {
+          "bank": 1,
+          "number": 10
+        },
+        {
+          "bank": 1,
+          "number": 11
+        }
+      ]
     }
-  ]
+  ],
+  "companion": {
+    "ip": "192.168.0.7",
+    "port": "8888"
+  }
 }
 
