@@ -11,6 +11,7 @@ function selectChange() {
     document.getElementById("btn_config_form").submit();
 }
 
+
 </script>
 <form action="/buttons" method="post" name="btn_config_form" id="btn_config_form">
 
@@ -23,25 +24,33 @@ function selectChange() {
         {% for button_name, button in buttons.items() %}
         <tr bgcolor="white">
             <td>
-                <h3>{{ button_name }}</h3>
                 <table>
+                    <tr>
+                        <td>
+                            <b>{{ button_name }}</b>
+                        </td>
+                        <td>Bouton companion</td>
+                        <td>Test</td>
+                    </tr>
                     <tr>
                         <td>Bank</td>
                         <td>
-                            <input type="number" name="button_bank-{{ button_name }}" step="1" value="{{ button.bank }}">
+                            <input type="number" name="button_bank-{{ button_name }}" step="1"
+                                   value="{{ button.bank }}">
+                        </td>
+                        <td>
+                            <input type="submit" name="test_button_{{ button_name }}"
+                                   formaction="/buttons/{{ button_name }}/test"
+                                   value="{% if button.state_str == 'up' %}APPUI BOUTON{% else %}RELACHE BOUTON{% endif %}">
                         </td>
                     </tr>
                     <tr>
                         <td>Number</td>
                         <td>
-                            <input type="number" name="button_number-{{ button_name }}" step="1" value="{{ button.number }}">
+                            <input type="number" name="button_number-{{ button_name }}" step="1"
+                                   value="{{ button.number }}">
                         </td>
-                    </tr>
-                    <tr>
-                        <td>Test</td>
                         <td>
-                            <input type="submit" name="test_button_{{ button_name }}"
-                                   formaction="/buttons/{{ button_name }}/test" value="{% if button.state == 'up' %}APPUI BOUTON{% else %}RELACHE BOUTON{% endif %}">
                             Echo visuel <input type="checkbox" name="echo_button-{{ button_name }}" {% if
                                                button.visual_echo %}checked{% endif %}>
                         </td>

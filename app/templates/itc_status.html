@@ -9,12 +9,12 @@
 
 <table id="cadre">
     <tr>
-        <td>
+        <td colspan="2">
             <h3>Status du boitier {{ hostname }}</h3>
         </td>
     </tr>
     <tr>
-        <td align="right">
+        <td colspan="2" align="right">
             <hr/>
             <h4>BOUTONS</h4>
             <a href="/buttons">Configurer</a>
@@ -22,8 +22,8 @@
     </tr>
     {% for button in buttons %}
     <tr bgcolor="white">
+        <td><b>{{ button.name }}</b></td>
         <td>
-            <h3>{{ button.name }}</h3>
             <table>
                 <tr>
                     <td>Bank :</td>
@@ -42,7 +42,7 @@
     </tr>
     {% endfor %}
     <tr>
-        <td align="right">
+        <td colspan="2" align="right">
             <hr>
             <h4>TALLY</h4>
             <a href="/tally">Gérer</a>
@@ -50,7 +50,7 @@
     </tr>
     {% for tally in tallies %}
     <tr bgcolor="white">
-        <td>
+        <td colspan="2">
             <h3>{{ tally.name }}</h3>
             <table>
                 <tr>
