@@ -30,23 +30,19 @@ class Buttons:
         self.config = config
         self.name = config['name']
         self.port = config['port']
-        self.states = config.get("states", [])
-        self.state_index = 0
         self.reverse = config.get('reverse', 0)
+        self.bank = config.get('bank')
+        self.number = config.get('number')
 
     def button_action(self, port):
         gpio_value = GPIO.input(port)
         # self.logger.info(f"Reverse {self.reverse} on port {port} with value {gpio_value}")
         if gpio_value != self.reverse:
-            # self.logger.info(f"Button {self.config['name']} on port {port} was released")
+            self.logger.info(f"Button {self.config['name']} on port {port} was released")
             self.state = 1
             self.execute_action('up')
-            self.state_index += 1
-            if self.state_index >= len(self.states):
-                self.state_index = 0
-            # self.logger.info(f"Button {self.config['name']} New index {self.state_index}")
         else:
-            # self.logger.info(f"Button {self.config['name']} on port {port} was pressed")
+            self.logger.info(f"Button {self.config['name']} on port {port} was pressed")
             self.state = 0
             self.execute_action('down')
 
@@ -54,9 +50,6 @@ class Buttons:
     def button_pressed(self, port):
         self.logger.info(f"Button {self.config['name']} on port {port} was pressed")
         self.execute_action(None)
-        self.state_index += 1
-        if self.state_index >= len(self.states):
-            self.state_index = 0
 
     def button_web_test(self):
         self.logger.info("Enter TEST TOGGLE")
@@ -70,8 +63,7 @@ class Buttons:
             self.execute_action('down')
 
     def execute_action(self, action):
-        self.companion.press_key(self.states[self.state_index].get('bank'),
-                                 self.states[self.state_index].get('number'), action)
+        self.companion.press_key(self.config.get('bank'), self.config.get('number'), action)
 
         if self.visual_echo:
             if self.tally:

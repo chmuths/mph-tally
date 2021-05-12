@@ -1,4 +1,3 @@
-import time
 from companion.companion_service import CompanionService, ConnectionException, ServerErrorException
 
 

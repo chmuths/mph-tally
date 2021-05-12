@@ -23,7 +23,7 @@ class CompanionService:
             full_url = f"{url}/{bank}/{number}/{state}"
         else:
             full_url = f"{url}/{bank}/{number}"
-        # self.logger.info(f"Companion API GET to {full_url}")
+        self.logger.info(f"Companion API GET to {full_url}")
         try:
             response = requests.get(url=full_url, timeout=10)
         except requests.exceptions.RequestException as e:
