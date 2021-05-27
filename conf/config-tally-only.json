@@ -18,29 +18,15 @@
       "port": 18,
       "reverse": 1,
       "mode": "PTT",
-      "states": [
-        {
-          "bank": 1,
-          "number": 2
-        }
-      ]
+      "bank": 1,
+      "number": 2
     },
     {
       "name": "black",
       "port": 24,
       "bank": 1,
       "number": 2,
-      "mode": "PTT",
-      "states": [
-        {
-          "bank": 1,
-          "number": 10
-        },
-        {
-          "bank": 1,
-          "number": 11
-        }
-      ]
+      "mode": "PTT"
     }
   ],
   "companion": {
